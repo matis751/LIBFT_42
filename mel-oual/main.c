@@ -1,9 +1,7 @@
 #include "filler.h"
 
-
 int main(void)
 {
-
 	t_map *map = NULL;
 
     if(!(map_init(&map)))

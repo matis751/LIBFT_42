@@ -1,6 +1,4 @@
-#include "LIBFT_42/libft.h"
 #include "filler.h"
-#include <stdio.h>
 
 int data_player(char *buff, t_map *map) /*Cherche le numero de joueur*/
 {
@@ -27,75 +25,108 @@ int data_map_size(char *buff, t_map *map) /*cherche la taille de la map*/
   while((*(++tmp_y) != ' ') && *(tmp_y))
     if(!(ft_isdigit(*tmp_y)))
       return (print_input_error(2));
-  map->size_x = ft_atoi(tmp_x);
+  map->size_y = ft_atoi(tmp_x);
   tmp_x = tmp_y;
   while((*(++tmp_x) != ' ') && *(tmp_x))
     if(!(ft_isdigit(*tmp_x)))
       return (print_input_error(2));
-  map->size_y = ft_atoi(tmp_y);
+  map->size_x = ft_atoi(tmp_y);
   if(map->size_y == 0 || map->size_x == 0)
       return (print_input_error(2));
   return(1);
 
 }
-int data_buff_checker_first_line(t_map *map, int *len)
+int data_buff_checker_first_line(t_map *map,char *buff,  int *len)
 {
-    int x = *len;
-      while(x++ <= 3 && map->buff[x])
-        if(map->buff[x] != ' ')
+      int x = *len;
+      int spaces_first_line = 4;
+      while(++x < spaces_first_line && buff[x])
+        if(buff[x] != ' ')
           return(print_input_error(6));
-      while(map->buff[x++] != '\n' && map->buff[x])
-        if(!(ft_isdigit(map->buff[x])))
-          return (print_input_error(6));
-      if(x != map->size_x + 1)
-        return (print_input_error(4));
-      return(*len = x);
-}
-int data_buff_checker(t_map *map, char *buff,  int size)
-{
-  int x = 0;
-  int y = -1;
-  int ret = 0;
+      while(++x < map->size_x + spaces_first_line && buff[x])
+      {
+        if((!(ft_isdigit(buff[x]))) ||
+            ((x + 1 < map->size_x + spaces_first_line) && buff[x + 1] != buff[x] + 1))
+          if(buff[x] != '9'&& buff[x+1] != '0')
+            return (print_input_error(6));
+      }
 
-  while(x <= size && ++y <= map->size_y)
-  {
-    if(y == 0)
-    {
-      if(!(ret = data_buff_checker_first_line(map, &x)))
-        return(ret);
-    }
-    else
-    {
-      while(x++ % 3) /*check les 3 premiers caracteres de la ligne il doit s'agir de numeros*/
-        if(!(ft_isdigit(buff[x])))
+      if(buff[x] != '\n')
           return (print_input_error(6));
-      if(buff[x] != ' ') /*l'espace entre les 3 premiers caracteres et la map*/
+      if(x - spaces_first_line != map->size_x)
+        return (print_input_error(4));
+      *len = x;
+      return(0);
+}
+int data_get_in_map(char *buff, t_map *map, int x)
+{
+  if(!(ft_njoinner(&map->buff, &buff[x]- map->size_x +1, map->size_x)))
+    return(-1);
+  return(1);
+
+}
+int data_map_checker(t_map *map, int x, int y, char *buff, int size)
+{
+    int lines_number = 3;
+    int colonnes = 0;
+
+    while(x <= size && ++y <= map->size_y + 1)
+    {
+      while(lines_number--) /*check les 3 premiers caracteres de la ligne il doit s'agir de numeros*/
+      {
+        ++x;
+        if(!(ft_isdigit(buff[x])))
+            return (print_input_error(6));
+      }
+      lines_number = 3;
+      if(buff[++x] != ' ') /*l'espace entre les 3 premiers caracteres et la map*/
         return (print_input_error(6));
-      while(buff[++x] && x % map->size_x)/*tant que que x % size_x different de 0 c'est que la ligne est pas finis*/
+      while(buff[++x] && ++colonnes < map->size_x)/*tant que que x % size_x different de 0 c'est que la ligne est pas finis*/
+      {
         if(buff[x] != '.' && buff[x] != 'o' && buff[x] != 'O' 
              && buff[x] != 'x' && buff[x] != 'X')
             return(print_input_error(6));
-      if(buff[x] != '\n') /*le dernier caractere de la ligne est un \n*/
-        return(print_input_error(6));
-      if(x % map->size_x + 1)
+      }
+      data_get_in_map(buff, map, x);
+      colonnes = 0;
+      if(buff[++x] != '\n') /*le dernier caractere de la ligne est un \n*/
         return(print_input_error(6));
     }
-  }
-  return((y == map->size_y || x == size) ? 1 : print_input_error(6));
+  return((y == map->size_y + 2 && x == size -1) ? 1 : print_input_error(6));
 }
-int data_map_buff(char *buff, t_map *map, int fd)
+int data_buff_checker(t_map *map, char *buff,  int size)
+{
+  int ret = 0;
+  int y = -1;
+  int x = -1;
+
+  while(1)
+  {
+    if(++y == 0)
+      ret = data_buff_checker_first_line(map, buff, &x);
+    if(y > 0)
+      ret = data_map_checker(map, x, y, buff, size);
+    if(ret < 0)
+      return(ret);
+    if(ret > 0)
+      break;
+   }
+  return(1);
+}
+int data_map_buff(t_map *map, int fd)
 {
     int ret = 0;
+    char *buff = NULL;
     int size = ((map->size_x + 5) * (map->size_y + 1));
 
-    if(!(buff = ft_strnew(size + 1)))
+    if(!(buff = ft_strnew(size)))
       return(-1);
+    while(1);
     if((ret = read(fd, buff, size)) < 0)
       return(ret);
     buff[ret] = '\0';
-    if(!(data_buff_checker(map, buff, size)))
+    if((data_buff_checker(map, buff, size)) < 0)
       return(-1);
-    map->buff = ft_strdup(buff);
     ft_strdel(&buff);
     return(1);
 }
@@ -128,18 +159,17 @@ int data_piece_size(char *buff, t_map *map, int fd)
     get_line_piece_size(&tmp, buff, fd);
     if(!(piece = ft_strstr(tmp,"Piece")))
       return(-1);
-    piece += 6;
-    tmp_piece = piece + 1;
-    while(*(tmp_piece++) != ' ')
+    piece += 5;
+    tmp_piece = piece;/*probleme de parcing ici*/
+    while(*(++tmp_piece) != ' ')
       if(!(ft_isdigit(*tmp_piece)))
         return (print_input_error(8));
-    map->piece_x = ft_atoi(piece);
+    map->piece_y = ft_atoi(piece);
     piece = tmp_piece;
-    tmp_piece += 1;
-    while(*(tmp_piece++) != ' ')
+    while(*(++tmp_piece) != ':')
       if(!(ft_isdigit(*tmp_piece)))
         return (print_input_error(8));
-    map->piece_y = ft_atoi(tmp_piece);
+    map->piece_x = ft_atoi(++piece);
     ft_strdel(&tmp);
     return(1);
 }
@@ -151,10 +181,13 @@ int data_buff_piece_cheker(char *buff, t_map *map, int size)
     {
       if(buff[x] != '*' && buff[x] != '.' && buff[x] != '\n')
         return(print_input_error(8));
-      if(buff[x] == '\n' && x % map->piece_x)
-        return (print_input_error(7));
-      else
-        y++;
+      if(buff[x] == '\n')
+      {
+        if(map->piece_x % x)
+             return (print_input_error(7));
+        else
+          y++;
+      }
     }
     if(y != map->piece_y || x != size)
       return (print_input_error(9));
@@ -163,27 +196,26 @@ int data_buff_piece_cheker(char *buff, t_map *map, int size)
 int data_piece_buff(char *buff, t_map *map, int fd)
 {
   int ret = 0;
-  int size_piece = (map->size_x + 1) * (map->size_y);
+  int size_piece = (map->piece_x + 1) * (map->piece_y);
   buff = ft_strnew(size_piece);
   if((ret = read(fd, buff, size_piece)) < 0)
     return(-1);
   buff[ret] = '\0';
-  if(!(data_buff_piece_cheker(buff, map, size_piece)))
+  if((data_buff_piece_cheker(buff, map, size_piece)) < 0)
     return(-1);
   map->piece_buff = ft_strdup(buff);
   ft_strdel(&buff);
   return(1);
 }
-int data_map(char *first_block, t_map *map, int fd)
+int data_map(char *buff, t_map *map, int fd)
 {
-  char *buff = NULL;
   int ret = 0;/*si ret == 0 c'est que le buffer n'as
 pas encore lu la piece la map ou le nb du joueur sion c'est une erreur */
-  if((ret = data_player(first_block, map)) < 0)
+  if((ret = data_player(buff, map)) < 0)
     return(ret);
-  if((ret = data_map_size(first_block, map)) < 0)/*prend la taille de la map*/
-    return(ret);/****************STOP ICI****************/
-  if((ret = data_map_buff(buff, map, fd)) < 0)/*prend la map, fd*/
+  if((ret = data_map_size(buff, map)) < 0)/*prend la taille de la map*/
+    return(ret);
+  if((ret = data_map_buff(map, fd)) < 0)/*prend la map, fd*/
     return(ret);
   if((ret = data_piece_size(buff, map, fd)) < 0) /*stock la piece*/
     return(ret);

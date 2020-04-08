@@ -44,23 +44,25 @@ void *piece_init(t_piece **piece);
 
 char *reader(t_map *map);
 int len_reader(char *buff, int *line, int *col);
-void *ft_joinner(char **tmp, char *buff);
-void *ft_memalloc_2(char **buff);
 
 /*READER_DATA*/
 
 int data_player(char *buff, t_map *map);
 int data_map_size(char *buff, t_map *map);
-int data_map_buff(char *buff, t_map *map, int fd);
+int data_map_buff(t_map *map, int fd);
 int data_map(char *buff, t_map *map, int fd);
 int data_buff_checker(t_map *map, char *buff, int size);
-int data_buff_checker_first_line(t_map *map, int *len);
+int data_buff_checker_first_line(t_map *map, char *buff, int *len);
 int ft_buff_data(t_map *map, int fd);
 int data_piece(char *buff, t_map *map, int fd);
 int data_piece_buff(char *buff, t_map *map, int fd);
 int get_line_piece_size(char **tmp, char *buff, int fd);
 int data_piece_size(char *buff, t_map *map, int fd);
 int data_buff_piece_cheker(char *buff, t_map *map, int size);
+int data_buff_checker(t_map *map, char *buff,  int size);
+int data_map_checker(t_map *map, int x, int y, char *buff, int size);
+int data_get_in_map(char *buff, t_map *map, int x);
+
 
 
 /*PARSER.C*/
@@ -70,5 +72,10 @@ int player_parser(t_filler **tmp, t_map *map);
 /*INIT.C*/
 
 void *ft_joinner(char **tmp, char *buff);
+void *ft_memalloc_2(char **buff);
+
+/*UTILS.C*/
+void *ft_joinner(char **tmp, char *buff);
+void *ft_njoinner(char**tmp, char *buff, int len);
 void *ft_memalloc_2(char **buff);
 

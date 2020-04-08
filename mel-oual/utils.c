@@ -18,9 +18,9 @@ void *ft_joinner(char **tmp, char *buff)
   char *s2 = NULL;
   char *ret = NULL;
 
+  if(*tmp == NULL)
+    *tmp = ft_strnew(1);
   s2 = *tmp;
-  if(s2 == NULL)
-    s2 = ft_strnew(1);
   if(!(s1 = ft_strnew(ft_strlen(s2) + ft_strlen(buff) + 1)))
     return(NULL);
   ret = s1;
@@ -29,8 +29,10 @@ void *ft_joinner(char **tmp, char *buff)
   while(*buff)
     *(s1++) = *(buff++);
   *s1 = '\0';
-  *tmp = ret;
-  return((void *)ret);
+  ft_strdel(&(*tmp));
+  *tmp = ft_strdup(ret);
+  ft_strdel(&ret);
+  return((void *)*tmp);
 }
 
 void *ft_njoinner(char **tmp, char *buff, int len)
@@ -40,9 +42,9 @@ void *ft_njoinner(char **tmp, char *buff, int len)
     char *ret = NULL;
 
 
+  if(*tmp == NULL)
+    *tmp = ft_strnew(1);
   s2 = *tmp;
-  if(s2 == NULL)
-    s2 = ft_strnew(1);
  if(!(s1 = ft_strnew(ft_strlen(s2) + len + 2)))
    return(NULL);
   ret = s1;
@@ -52,6 +54,8 @@ void *ft_njoinner(char **tmp, char *buff, int len)
     *(s1++) = *(buff++);
   *s1 = '\0';
   *(++s1) = '\n';
-  *tmp = ret;
-  return((void *)s1);
+  ft_strdel(&(*tmp));
+  *tmp = ft_strdup(ret);
+  ft_strdel(&ret);
+  return((void *)*tmp);
 }

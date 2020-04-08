@@ -121,7 +121,6 @@ int data_map_buff(t_map *map, int fd)
 
     if(!(buff = ft_strnew(size)))
       return(-1);
-    while(1);
     if((ret = read(fd, buff, size)) < 0)
       return(ret);
     buff[ret] = '\0';
@@ -221,5 +220,6 @@ pas encore lu la piece la map ou le nb du joueur sion c'est une erreur */
     return(ret);
   if((ret = data_piece_buff(buff, map, fd)) < 0)/*arret ici*/
     return(-1);
+  while(1);
   return(1);
 }

@@ -220,6 +220,5 @@ pas encore lu la piece la map ou le nb du joueur sion c'est une erreur */
     return(ret);
   if((ret = data_piece_buff(buff, map, fd)) < 0)/*arret ici*/
     return(-1);
-  while(1);
   return(1);
 }

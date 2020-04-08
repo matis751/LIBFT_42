@@ -45,5 +45,6 @@ char *reader(t_map *map)
         return(NULL);
       break;
 	}
+    while(1);
 	return(tmp);
 }
